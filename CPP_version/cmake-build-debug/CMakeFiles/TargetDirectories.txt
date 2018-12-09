@@ -1,0 +1,3 @@
+/home/kamilla/Coursework/CPP_version/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/kamilla/Coursework/CPP_version/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/kamilla/Coursework/CPP_version/cmake-build-debug/CMakeFiles/CPP_version.dir
