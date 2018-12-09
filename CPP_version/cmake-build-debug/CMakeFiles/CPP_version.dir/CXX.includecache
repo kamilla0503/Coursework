@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/kamilla/Coursework/CPP_version/conformations.cpp
+vector
+-
+map
+-
+tuple
+-
+iostream
+-
+algorithm
+-
+
+/home/kamilla/Coursework/CPP_version/functions.h
+vector
+-
+map
+-
+tuple
+-
+iostream
+-
+algorithm
+-
+
+/home/kamilla/Coursework/CPP_version/main.cpp
+iostream
+-
+time.h
+-
+conformations.cpp
+/home/kamilla/Coursework/CPP_version/conformations.cpp
+functions.h
+/home/kamilla/Coursework/CPP_version/functions.h
+
