@@ -2,7 +2,7 @@
 #include <time.h>
 //#include "conformations.cpp"
 #include "functions.h"
-
+#include <fstream>
 int main() {
 
     vector<tuple<int, int>> saw_axample, ssaw_axample ;
@@ -37,14 +37,29 @@ int main() {
     time (&start);
 
 
-    vector<vector<tuple<int, int>>> test = get_all_conformations(10);
+    vector<vector<tuple<int, int>>> test = get_all_conformations(18);
 
     time (&end);
     cout << endl;
     cout << "number of conformations " << test.size() << endl;
 
+
+    //f=fopen("out_12.dat", "ab+");
+
     double dif = difftime(end, start);
     printf ("Time = %lf \n", dif);
+    /**for (int i=0; i<test.size(); i++) {
+
+        fwrite(test[i], sizeof(test[i]), 1, f);
+
+    }**/
+
+
+    /**
+    ofstream fout("data.dat", ios::out | ios::binary);
+    fout.write((char*)&student[0], student.size() * sizeof(Student));
+    fout.close();
+    **/
 
     std::cout << "Hello, World!" << std::endl;
     return 0;

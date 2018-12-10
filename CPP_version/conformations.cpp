@@ -63,10 +63,10 @@ vector<vector<tuple<int, int>>>  filter_conformations(vector<vector<tuple<int, i
     int k=0;
     for(int i=1; i<saws.size(); i++){
         k=0;
-        if( i%100==0){
+        /**if( i%100==0){
 
             cout << i << " "<< endl;
-        }
+        }**/
         for ( vector<tuple<int, int>> conformation : result    ){
             if(  distance_between_saws(conformation, saws[i] )== 0){
                 k=-1;
