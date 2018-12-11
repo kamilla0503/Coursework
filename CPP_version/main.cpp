@@ -36,8 +36,10 @@ int main() {
     time_t start, end;
     time (&start);
 
+    int walk_len;
+    std::cin >> walk_len;
 
-    vector<vector<tuple<int, int>>> test = get_all_conformations(18);
+    vector<vector<tuple<int, int>>> test = get_all_conformations(walk_len);
 
     time (&end);
     cout << endl;
