@@ -1,13 +1,15 @@
 //
 // Created by kamilla on 09.12.18.
 //
-
+/**
 #include<vector>
 #include<map>
 #include <tuple>
 #include <iostream>
 #include <algorithm>
-using namespace std;
+using namespace std;**/
+
+#include"conformations.h"
 
 vector <int> vector_for_distance(vector<tuple<int, int>> saw ){
     vector <int> result;
@@ -63,10 +65,10 @@ vector<vector<tuple<int, int>>>  filter_conformations(vector<vector<tuple<int, i
     int k=0;
     for(int i=1; i<saws.size(); i++){
         k=0;
-        /**if( i%100==0){
+        if( i%300==0){
 
             cout << i << " "<< endl;
-        }**/
+        }
         for ( vector<tuple<int, int>> conformation : result    ){
             if(  distance_between_saws(conformation, saws[i] )== 0){
                 k=-1;
@@ -80,6 +82,28 @@ vector<vector<tuple<int, int>>>  filter_conformations(vector<vector<tuple<int, i
             result.push_back(saws[i]);
         }
     }
+
+
+    cout << "for length " << saws[0].size() << " finished " << endl;
+    string name = "coordinates_for_" + to_string(saws[0].size()) +".txt";
+    ofstream out(name);
+    //cout << "name " << name << endl;
+    //out.open(name);
+    for (int i=0; i<result.size(); i++){
+        for (int j=0; j<result[i].size(); j++){
+            out<< get<0>(result[i][j])<< " " << get<1>(result[i][j]) << " ";
+
+        }
+        out<< endl;
+        //cout << "Cycle " << endl;
+
+    }
+
+    out.close();
+    cout<< "writed "<< endl;
+
+
+
     return result;
 }
 
@@ -110,8 +134,6 @@ vector<vector<tuple<int, int>>> get_all_conformations(int length){
                 temp.clear();
 
             }
-
-
 
         }
 

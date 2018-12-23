@@ -1,8 +1,8 @@
 #include <iostream>
 #include <time.h>
 //#include "conformations.cpp"
-#include "functions.h"
-#include <fstream>
+#include "conformations.h"
+//#include <fstream>
 int main() {
 
     vector<tuple<int, int>> saw_axample, ssaw_axample ;
