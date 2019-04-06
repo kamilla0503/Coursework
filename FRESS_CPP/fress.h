@@ -31,6 +31,7 @@ public:
     void find_minimum();
     void calculate_probabilities_for_l(int lmin = 2, int lmax = 12);
     int count_contacts();
+    void regrowth_middle(int l, int start_position);
 
 
 

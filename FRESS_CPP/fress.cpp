@@ -152,6 +152,34 @@ int Protein::count_contacts(){
 
 }
 
+void Protein::regrowth_middle(int l, int start_position){
+
+    static std::list <std::pair <int, int>>  steps = { std::make_pair(1, 0), std::make_pair(-1, 0), std::make_pair(0, 1),  std::make_pair(0, -1) };
+
+    int end_position = start_position+l-1;
+
+    std::list <std::pair <int, int>> first_moves ;
+
+    for ( std::pair <int, int> step : steps ){
+        
+
+
+    }
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
 
 void Protein::find_minimum() {
 
