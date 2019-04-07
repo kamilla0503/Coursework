@@ -143,7 +143,7 @@ int Protein::count_contacts(){
 
         if (std::find(conformation.begin(), conformation.end(), new_point_end) !=conformation.end() &&std::find(not_topological.begin(),not_topological.end(), new_point_end)==not_topological.end()   ) {
             position = std::distance(conformation.begin(), find(conformation.begin(), conformation.end(), new_point_end) );
-            hh = hh + sequence[position]*sequence[0];
+            hh = hh + sequence[position]*sequence[sequence.size()-1];;
         }
 
     }
