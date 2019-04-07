@@ -201,14 +201,19 @@ int Protein::count_contacts(){
 }
 
 
+int Protein::distance( std:: pair <int, int> point1, std:: pair <int, int>point2   ){
 
+
+    return abs(point2.first-point1.first) + abs(point2.second-point1.second);
+
+}
 void Protein::regrowth_middle(int l, int start_position){
 
     static std::list <std::pair <int, int>>  steps = { std::make_pair(1, 0), std::make_pair(-1, 0), std::make_pair(0, 1),  std::make_pair(0, -1) };
 
     int end_position = start_position+l-1;
-
-    std::list <std::pair <int, int>> first_moves ;
+    std::vector<std::pair <int, int>>  C_t;
+    std::vector<std::pair <int, int>> first_moves ;
 
     for ( std::pair <int, int> step : steps ){
         
@@ -255,8 +260,10 @@ void Protein::find_minimum() {
         }
 
 
-        std::default_random_engine generators;
-        std::uniform_int_distribution<int> distribution(0,sequence.size()-l-1);
+        std::default_random_engine generators1;
+        std::uniform_int_distribution<int> distribution1(0,sequence.size()-l-1);
+        start_position = distribution1(generators1);
+
 
         //std:: cout << l << " " ;
 
