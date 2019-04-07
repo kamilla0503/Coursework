@@ -163,6 +163,8 @@ int Protein::count_contacts(){
 
         }
 
+        not_topological={};
+
 
     }
 
@@ -194,7 +196,7 @@ int Protein::count_contacts(){
 
 
 
-
+    return  (-1*div(hh, 2).quot);
 
 }
 
