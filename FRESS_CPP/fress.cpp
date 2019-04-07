@@ -152,16 +152,57 @@ int Protein::count_contacts(){
 
 }
 
+int Protein::distance( std:: pair <int, int> point1, std:: pair <int, int>point2   ){
+
+
+    return abs(point2.first-point1.first) + abs(point2.second-point1.second);
+
+}
+
+
 void Protein::regrowth_middle(int l, int start_position){
 
     static std::list <std::pair <int, int>>  steps = { std::make_pair(1, 0), std::make_pair(-1, 0), std::make_pair(0, 1),  std::make_pair(0, -1) };
-
+    std::pair <int, int> new_point ;
     int end_position = start_position+l-1;
 
     std::list <std::pair <int, int>> first_moves ;
 
+    std::list <std::pair <int, int>> removed_part, copy, temporary_part;
+    std::list<std::pair <int, int>>::iterator range_begin = conformation.begin();
+    std::list<std::pair <int, int>>::iterator range_end = conformation.begin();
+    std::advance(range_begin, start_position);
+    std::advance(range_end, end_position+1);
+    removed_part.splice(removed_part.begin(), conformation, range_begin, range_end   );
+    copy=removed_part; //чтобы в случае неудачи вернуть предыдущую конформацию
+    temporary_part = conformation;
+   // std::list<std::pair <int, int>>::iterator range_begin_c = conformation.begin();
+   // std::list<std::pair <int, int>>::iterator range_end_c = conformation.begin();
+    range_begin=temporary_part.begin();
+    //range_end=temporary_part.begin();
+    std::advance(range_begin, end_position+1); //вроде на следующем после удаленного куска
+    //std::advance(range_end, end_position+1);
+    temporary_part.erase(range_begin, temporary_part.end()); // начальный кусок цепочки с выкинутой частью
+    std::pair <int, int> finish_point = temporary_part.back();
+    range_begin=temporary_part.begin();
+
+
+
+
+
+    //std::cout << " l " << l << " size " << removed_part.size() << std::endl;
+
+
+
+
     for ( std::pair <int, int> step : steps ){
-        
+        new_point=std::make_pair(temporary_part.back().first+step.first, temporary_part.back().second+step.second);
+        if(new_point==removed_part.front() ){
+            continue;
+        }
+        if (std::find(conformation.begin(), conformation.end(), new_point)==conformation.end() &&(new_point, current_conf[end_position+1])  )
+
+
 
 
     }
@@ -205,10 +246,13 @@ void Protein::find_minimum() {
         }
 
 
-        std::default_random_engine generators;
-        std::uniform_int_distribution<int> distribution(0,sequence.size()-l-1);
-
+        std::default_random_engine generators1;
+        std::uniform_int_distribution<int> distribution1(0,sequence.size()-l-1);
+        start_position = distribution1(generators1);
         //std:: cout << l << " " ;
+
+
+        regrowth_middle(l, start_position);
 
 
 

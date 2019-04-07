@@ -23,7 +23,7 @@ public:
     std::vector <double>  probabilities={};
     //std::pair <int, std::tuple<int, int>> node;
     //std::pair <int, int> coordinate;
-    std::list <std::pair <int, int>> conformation;
+    std::list<std::pair <int, int>> conformation;
     std:: vector <std:: list <std:: pair <int, int>>> results;
     Protein();
     Protein(std::valarray <int> sequence_input, int number_of_iterations=5000000 );
@@ -32,6 +32,7 @@ public:
     void calculate_probabilities_for_l(int lmin = 2, int lmax = 12);
     int count_contacts();
     void regrowth_middle(int l, int start_position);
+    int distance( std:: pair <int, int> point1, std:: pair <int, int>point2   );
 
 
 
