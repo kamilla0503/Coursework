@@ -58,7 +58,7 @@ void Protein::calculate_probabilities_for_l(int lmin, int lmax) {
 
 }
 
-int Protein::count_contacts(){
+/**int Protein::count_contacts(){
     int hh=0;
     static std::list <std::pair <int, int>>  steps = { std::make_pair(1, 0), std::make_pair(-1, 0), std::make_pair(0, 1),  std::make_pair(0, -1) };
     std:: list <std::pair <int, int>> not_topological;
@@ -75,10 +75,6 @@ int Protein::count_contacts(){
     not_topological.erase(range_middle);
     std::pair <int, int> new_point, new_point1;
     //std::cout << "size of not topological : " << not_topological.size() << std::endl;
-    /**for ( std::pair <int, int> c : not_topological    ){
-        std::cout << c.first  << " " << c.second << " ";
-    }
-    std::cout<< std:: endl;**/
 
    for (std::pair <int, int> c : conformation ) {
 
@@ -114,12 +110,6 @@ int Protein::count_contacts(){
 
        }
 
-        /**
-       std::cout << "size of not topological : " << not_topological.size() << std::endl;
-       for ( std::pair <int, int> q : not_topological    ){
-           std::cout << q.first  << " " << q.second << " ";
-       }
-       std::cout<< std:: endl; **/
 
 
    }
@@ -150,7 +140,65 @@ int Protein::count_contacts(){
 
     return (-1*div(hh, 2).quot);
 
+}**/
+
+
+int Protein::count_contacts(){
+    int hh = 0;
+    int position;
+    static std::valarray<std::pair <int, int>>  steps = { std::make_pair(1, 0), std::make_pair(-1, 0), std::make_pair(0, 1),  std::make_pair(0, -1) };
+    std:: vector <std::pair <int, int>> not_topological = {};
+    std::pair <int, int> new_point,new_point_begin, new_point_end;
+    for (int i =1; i<sequence.size()-1; i++){
+        not_topological.push_back(conformation [i-1]);
+        not_topological.push_back(conformation [i+1]);
+        for ( std::pair <int, int> step : steps ){
+            new_point = std::make_pair( conformation[i].first+step.first, conformation [i].second+step.second );
+            if ( std::find(conformation.begin(), conformation.end(), new_point) !=conformation.end() &&std::find(not_topological.begin(),not_topological.end(), new_point)==not_topological.end() ){
+                position=std::distance(conformation.begin(),find(conformation.begin(), conformation.end(), new_point));
+                hh=hh+sequence[i]*sequence[position];
+            }
+
+
+
+        }
+
+
+    }
+
+
+    for ( std::pair <int, int> step : steps ) {
+        new_point_begin = std::make_pair(conformation[0].first+step.first, conformation[0].second+step.second );
+        new_point_end= std::make_pair(conformation.back().first+step.first,conformation.back().second+step.second);
+        if(std::find(conformation.begin(), conformation.end(), new_point) !=conformation.end()  && new_point_begin!= conformation [1]) {
+            position = std::distance(conformation.begin(),find(conformation.begin(), conformation.end(), new_point_begin));
+
+            hh=hh+sequence[position]*sequence[0];
+
+
+        }
+
+
+        if (std::find(conformation.begin(), conformation.end(), new_point_end) !=conformation.end() &&std::find(not_topological.begin(),not_topological.end(), new_point_end)==not_topological.end()   ) {
+            position = std::distance(conformation.begin(), find(conformation.begin(), conformation.end(), new_point_end) );
+            hh = hh + sequence[position]*sequence[sequence.size()-1];
+        }
+
+
+
+
+
+
+    }
+
+
+
+
+
+
 }
+
+
 
 void Protein::regrowth_middle(int l, int start_position){
 

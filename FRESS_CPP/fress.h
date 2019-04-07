@@ -23,7 +23,7 @@ public:
     std::vector <double>  probabilities={};
     //std::pair <int, std::tuple<int, int>> node;
     //std::pair <int, int> coordinate;
-    std::list <std::pair <int, int>> conformation;
+    std::vector <std::pair <int, int>> conformation;
     std:: vector <std:: list <std:: pair <int, int>>> results;
     Protein();
     Protein(std::valarray <int> sequence_input, int number_of_iterations=5000000 );
