@@ -31,6 +31,7 @@ public:
     void find_minimum();
     void calculate_probabilities_for_l(int lmin = 2, int lmax = 12);
     int count_contacts();
+    int distance( std:: pair <int, int> point1, std:: pair <int, int>point2   );
     void regrowth_middle(int l, int start_position);
     int distance( std:: pair <int, int> point1, std:: pair <int, int>point2   );
 
