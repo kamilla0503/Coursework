@@ -212,15 +212,47 @@ void Protein::regrowth_middle(int l, int start_position){
     static std::list <std::pair <int, int>>  steps = { std::make_pair(1, 0), std::make_pair(-1, 0), std::make_pair(0, 1),  std::make_pair(0, -1) };
 
     int end_position = start_position+l-1;
-    std::vector<std::pair <int, int>>  C_t;
-    std::vector<std::pair <int, int>> first_moves ;
+    std::vector<std::pair <int, int>>  C_t, C_t_temp ;
+    std::valarray<int> seq_t=sequence[std::slice()];
 
+    std::copy(conformation.begin(), conformation.begin()+ start_position, C_t_temp.begin());
+    C_t = C_t_temp;
+    C_t_temp.clear();
+    std::copy(conformation.begin()+end_position+1, conformation.end()+ start_position, C_t_temp.begin());
+    C_t.reserve(C_t.size()+C_t_temp.size());
+    C_t.insert(C_t.end(), C_t_temp.begin(), C_t_temp.end());
+    C_t_temp.clear();
+
+    std::vector<std::pair <int, int>> first_moves ;
+    std::pair<int, int> point;
     for ( std::pair <int, int> step : steps ){
-        
+        point = std::make_pair(C_t[start_position-1].first+step.first, C_t[start_position-1].second+step.second);
+
+        if (point == conformation[start_position]){
+
+            continue;
+        }
+        if( std::find(C_t.begin(), C_t.end(),point   )==C_t.end() &&distance(point, conformation[end_position+1]) <=abs(end_position+1-start_position)  ){
+
+            first_moves.push_back(point);
+        }
+
+
 
 
     }
 
+
+    if(first_moves.size()==0){
+        return;
+
+    }
+    else{
+
+
+
+
+    }
 
 
 
