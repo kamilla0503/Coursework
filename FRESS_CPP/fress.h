@@ -12,21 +12,31 @@
 #include <random>
 #include <tuple>
 #include <vector>
+#include <map>
+#include <math.h>
 
 
 class Protein{
 public:
-    std::valarray <int> sequence;
+    std::vector <int> sequence;
     int number_of_iterations;
     int E;
     int min_E;
+    float T;
     std::vector <double>  probabilities={};
     //std::pair <int, std::tuple<int, int>> node;
     //std::pair <int, int> coordinate;
     std::vector <std::pair <int, int>> conformation;
+    std::vector<int> conformation_int;
     std:: vector <std:: list <std:: pair <int, int>>> results;
+    std:: map <int, std::vector < std::pair <int, int> >> map_of_contacts;
+    std:: map <int, std::pair<int, int>> map_int_to_coordinate;
+    std:: map <std::pair<int, int>, int> map_coordinate_to_int;
+
+
+
     Protein();
-    Protein(std::valarray <int> sequence_input, int number_of_iterations=5000000 );
+    Protein(std::vector <int> sequence_input, int number_of_iterations=5000000 );
 
     void find_minimum();
     void calculate_probabilities_for_l(int lmin = 2, int lmax = 12);
@@ -37,6 +47,8 @@ public:
 
 
 };
+
+int count_contacts_breaked(std::vector <int> &sequence, std::vector <std::pair <int, int>> &conformation, std:: map <int, std::vector < std::pair <int, int> >> &map_of_contacts, std:: map <std::pair<int, int>, int> &map_coordinate_to_int     );
 
 
 
