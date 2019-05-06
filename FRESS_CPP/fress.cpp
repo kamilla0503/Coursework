@@ -80,13 +80,13 @@ Protein::Protein(std::vector<int> sequence_input, int number_of_iterations_input
         std:: cout << c.first << " " << c.second.first << " " << c.second.second << std::endl;
     }
 **/
-    for (auto c : map_coordinate_to_int) {
+   /** for (auto c : map_coordinate_to_int) {
 
         std:: cout << c.first.first << " " << c.first.second << " " << c.second  << std::endl;
     }
+**/
 
-
-    std::ofstream out1;
+ /**   std::ofstream out1;
     out1.open("contact_map");
 
     for (auto c : map_of_contacts){
@@ -96,11 +96,11 @@ Protein::Protein(std::vector<int> sequence_input, int number_of_iterations_input
         }
 
         out1 << std::endl;
-    }
+    }**/
 
 
-
-    conformation.push_back(std::make_pair(0, 0));
+// push_back or emplace_back?
+    conformation.emplace_back(std::make_pair(0, 0));
     conformation_int.push_back(0);
     std::pair <int, int> new_coordinate;
     for (int i=1; i<length; i++){
@@ -116,7 +116,7 @@ Protein::Protein(std::vector<int> sequence_input, int number_of_iterations_input
         conformation.push_back(new_coordinate);
         conformation_int.push_back(map_coordinate_to_int[new_coordinate]);
     }
-
+/**
     std::ofstream out;
     out.open("coordinates_one_step");
 
@@ -128,7 +128,7 @@ Protein::Protein(std::vector<int> sequence_input, int number_of_iterations_input
         out << std::endl;
 
 
-    }
+    }**/
 
 
 
@@ -450,6 +450,605 @@ int Protein::distance( std:: pair <int, int> point1, std:: pair <int, int>point2
 
 
 
+void Protein::regrowth_end(int l ){
+
+    std::vector<std::pair <int, int>>  C_t ;
+    std::vector<int> seq_t;
+
+    C_t.reserve(sequence.size());
+    C_t.resize(sequence.size()-l);
+    std::copy(conformation.begin(), conformation.begin()+sequence.size()-l, C_t.begin());
+
+    //std:: cout << " check size " << C_t.size() << std::endl ;
+
+    seq_t.reserve(sequence.size());
+
+    seq_t.resize(sequence.size()-l);
+    std::copy(sequence.begin(), sequence.begin()+sequence.size()-l, seq_t.begin());
+
+
+    int current_energy = count_contacts_breaked(seq_t, C_t, map_of_contacts, map_coordinate_to_int);
+    int temp_e;
+    static std::vector <std::pair<float, int>> probabilities_to_move;
+    probabilities_to_move.resize(4, std::make_pair(0.0, 0));
+    std::vector<int> energies;
+    energies.resize(4, 0);
+    std::pair<int, int> point;
+    float sum_probabilities=0.0;
+
+    seq_t.emplace_back( sequence[sequence.size()-l]);
+
+
+    for (int i =0; i<4; i++ ){
+
+
+
+        if (map_of_contacts[map_coordinate_to_int[C_t.back()]][i] == conformation[sequence.size()-l] ||  std::find(C_t.begin(), C_t.end(), map_of_contacts[map_coordinate_to_int[C_t.back()]][i]   )!=C_t.end()  ){
+            probabilities_to_move[i] = std::make_pair(0.0, i);
+            energies[i] = 0;//strange, but it for time economy
+            continue;
+        }
+        else{
+            //точка подходит
+
+            // Лучше потом переделать функцию для энергии
+          //  C_t.insert(C_t.begin(),map_of_contacts[map_coordinate_to_int[C_t[0]]][i]  );
+            C_t.emplace_back(map_of_contacts[map_coordinate_to_int[C_t.back()]][i]);
+            temp_e = count_contacts_breaked(seq_t, C_t, map_of_contacts,map_coordinate_to_int);
+            energies[i] = temp_e;
+            probabilities_to_move[i] = std::make_pair( exp(-(temp_e-current_energy)/T), i);
+
+            C_t.pop_back(); //????
+
+
+
+        }
+
+
+
+        sum_probabilities=sum_probabilities+probabilities_to_move[i].first;
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+    if(sum_probabilities==0.0){
+        std:: cout << " fail to rebuild" << std::endl;
+        std::ofstream out;
+        out.open("coordinates_one_step_fail.txt");
+
+        for (auto c : conformation) {
+
+            out << c.first << " " << c.second << "   ";
+
+
+            out << std::endl;
+
+
+        }
+        out.close();
+
+
+        return;
+
+    }
+
+    sort(probabilities_to_move.begin(), probabilities_to_move.end());
+    for (int i =0; i<4; i++ ){
+        probabilities_to_move[i].first= probabilities_to_move[i].first/sum_probabilities;
+
+
+    }
+
+
+
+    for (int i =1; i<4; i++ ){
+        probabilities_to_move[i].first= probabilities_to_move[i].first + probabilities_to_move[i-1].first;
+
+
+    }
+
+
+
+    std::default_random_engine generator(std::random_device{}() );
+    std::uniform_real_distribution<double> distribution(0.0,1.0);
+    double q = distribution(generator);
+    std::cout << " q = " << q << std:: endl;
+    for (int i =0; i<4; i++ ){
+
+        if (q<probabilities_to_move[i].first){
+            C_t.emplace_back( map_of_contacts[map_coordinate_to_int[ C_t.back()  ]][probabilities_to_move[i].second]  );
+            current_energy = energies[probabilities_to_move[i].second];
+
+            //seq_t.insert(seq_t.begin()+start_position, sequence[start_position]);
+
+            std:: cout << " choosed " << map_of_contacts[map_coordinate_to_int[ C_t.back()  ]][probabilities_to_move[i].second] .first << " " << map_of_contacts[map_coordinate_to_int[ C_t.back()  ]][probabilities_to_move[i].second] .second  << " " << std:: endl;
+            // std:: cout << "check size " << C_t.size() << std:: endl;
+            break;
+
+        }
+
+    }
+
+
+    for (int t = sequence.size()-l+1; t<sequence.size(); t++) {
+        std::cout << " t = " << t << std::endl;
+        seq_t.emplace_back( sequence[t]);
+
+        sum_probabilities = 0.0;
+
+
+        for (int i =0; i<4; i++ ){
+
+            if(std::find(C_t.begin(), C_t.end(), map_of_contacts[map_coordinate_to_int[C_t.back()]][i])==C_t.end() ){
+
+
+                //C_t.insert(C_t.begin(),map_of_contacts[map_coordinate_to_int[C_t[0]]][i]  );
+                C_t.emplace_back(map_of_contacts[map_coordinate_to_int[C_t.back()]][i]);
+                temp_e = count_contacts_breaked(seq_t, C_t, map_of_contacts,map_coordinate_to_int);
+                energies[i] = temp_e;
+                probabilities_to_move[i] = std::make_pair( exp(-(temp_e-current_energy)/T), i);
+
+                C_t.pop_back();
+
+
+
+
+
+
+            }
+            else {
+                //точка не подходит
+
+
+                probabilities_to_move[i] = std::make_pair(0.0, i);
+                energies[i] = 0;
+
+
+            }
+
+
+
+
+
+            sum_probabilities=sum_probabilities+probabilities_to_move[i].first;
+
+
+
+
+
+        }
+
+
+        if(sum_probabilities==0.0){
+            std:: cout << " fail to rebuild" << std::endl;
+
+
+            std::ofstream out;
+            out.open("coordinates_one_step_fail.txt");
+
+            for (auto c : conformation) {
+
+                out << c.first << " " << c.second << "   ";
+
+
+                out << std::endl;
+
+
+            }
+            out.close();
+
+
+
+            return;
+
+        }
+
+        sort(probabilities_to_move.begin(), probabilities_to_move.end());
+        for (int i =0; i<4; i++ ){
+            probabilities_to_move[i].first= probabilities_to_move[i].first/sum_probabilities;
+
+
+        }
+        for (int i =1; i<4; i++ ){
+            probabilities_to_move[i].first= probabilities_to_move[i].first + probabilities_to_move[i-1].first;
+
+
+        }
+
+
+
+
+        q = distribution(generator);
+        //std::cout << " q = " << q << std:: endl;
+
+        for (int i =0; i<4; i++ ){
+
+            if (q<probabilities_to_move[i].first){
+                C_t.emplace_back(map_of_contacts[map_coordinate_to_int[ C_t.back()  ]][probabilities_to_move[i].second]  );
+                current_energy = energies[probabilities_to_move[i].second];
+
+                // seq_t.insert(seq_t.begin()+t, sequence[t]);
+
+
+                std:: cout << " choosed " << map_of_contacts[map_coordinate_to_int[ C_t.back()  ]][probabilities_to_move[i].second] .first<< " " << map_of_contacts[map_coordinate_to_int[ C_t.back()  ]][probabilities_to_move[i].second] .second  << " " << std:: endl;
+
+
+
+
+
+                break;
+
+            }
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+    if( C_t.size()==sequence.size()  ){
+
+        E = current_energy;
+        conformation=C_t;
+
+        std::cout << " check energy " << current_energy << std::endl;
+        std::ofstream out;
+        out.open("coordinates_one_step_end.txt");
+
+        for (auto c : conformation) {
+
+            out << c.first << " " << c.second << "   ";
+
+
+            out << std::endl;
+
+
+        }
+        out.close();
+
+
+    }
+    else{
+        std::cout << " fail int the end " << std:: endl;
+        std:: cout << "new size " << C_t.size() << std:: endl;
+        return ;
+    }
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+void Protein::regrowth_start(int l ) {
+
+
+
+    std:: cout << " we are preparing  for regrowth" << std:: endl;
+    std::vector<std::pair <int, int>>  C_t ;
+    std::vector<int> seq_t;
+
+    C_t.reserve(sequence.size());
+    C_t.resize(sequence.size()-l);
+    std::copy(conformation.begin()+l, conformation.end(), C_t.begin());
+
+
+
+    seq_t.reserve(sequence.size());
+
+    seq_t.resize(sequence.size()-l);
+    std::copy(sequence.begin()+l, sequence.end(), seq_t.begin());
+
+
+    int current_energy = count_contacts_breaked(seq_t, C_t, map_of_contacts, map_coordinate_to_int);
+    int temp_e;
+    static std::vector <std::pair<float, int>> probabilities_to_move;
+    probabilities_to_move.resize(4, std::make_pair(0.0, 0));
+    std::vector<int> energies;
+    energies.resize(4, 0);
+    std::pair<int, int> point;
+    float sum_probabilities=0.0;
+
+    seq_t.insert(seq_t.begin(), sequence[l-1]);
+
+std:: cout << " we are ready for regrowth" << std:: endl;
+
+    for (int i =0; i<4; i++ ){
+        //убираю вариант старой точки и самопересечения
+        if (map_of_contacts[map_coordinate_to_int[C_t[0]]][i] == conformation[l-1] ||  std::find(C_t.begin(), C_t.end(), map_of_contacts[map_coordinate_to_int[C_t[0]]][i]   )!=C_t.end()  ){
+            probabilities_to_move[i] = std::make_pair(0.0, i);
+            energies[i] = 0;//strange, but it for time economy
+            continue;
+        }
+        else{
+            //точка подходит
+
+            // Лучше потом переделать функцию для энергии
+            C_t.insert(C_t.begin(),map_of_contacts[map_coordinate_to_int[C_t[0]]][i]  );
+
+            temp_e = count_contacts_breaked(seq_t, C_t, map_of_contacts,map_coordinate_to_int);
+            energies[i] = temp_e;
+            probabilities_to_move[i] = std::make_pair( exp(-(temp_e-current_energy)/T), i);
+
+            C_t.erase(C_t.begin());
+
+
+
+        }
+
+
+
+        sum_probabilities=sum_probabilities+probabilities_to_move[i].first;
+
+
+
+
+    }
+
+
+    if(sum_probabilities==0.0){
+        std:: cout << " fail to rebuild" << std::endl;
+        std::ofstream out;
+        out.open("coordinates_one_step_fail.txt");
+
+        for (auto c : conformation) {
+
+            out << c.first << " " << c.second << "   ";
+
+
+            out << std::endl;
+
+
+        }
+        out.close();
+
+
+        return;
+
+    }
+
+    sort(probabilities_to_move.begin(), probabilities_to_move.end());
+    for (int i =0; i<4; i++ ){
+        probabilities_to_move[i].first= probabilities_to_move[i].first/sum_probabilities;
+
+
+    }
+
+
+
+    for (int i =1; i<4; i++ ){
+        probabilities_to_move[i].first= probabilities_to_move[i].first + probabilities_to_move[i-1].first;
+
+
+    }
+
+
+
+    std::default_random_engine generator(std::random_device{}() );
+    std::uniform_real_distribution<double> distribution(0.0,1.0);
+    double q = distribution(generator);
+    std::cout << " q = " << q << std:: endl;
+    for (int i =0; i<4; i++ ){
+
+        if (q<probabilities_to_move[i].first){
+            C_t.insert(C_t.begin(),map_of_contacts[map_coordinate_to_int[ C_t[0]  ]][probabilities_to_move[i].second]  );
+            current_energy = energies[probabilities_to_move[i].second];
+
+            //seq_t.insert(seq_t.begin()+start_position, sequence[start_position]);
+
+            std:: cout << " choosed " << map_of_contacts[map_coordinate_to_int[ C_t[0]  ]][probabilities_to_move[i].second] .first << " " << map_of_contacts[map_coordinate_to_int[ C_t[0]  ]][probabilities_to_move[i].second] .second  << " " << std:: endl;
+           // std:: cout << "check size " << C_t.size() << std:: endl;
+            break;
+
+        }
+
+    }
+
+    for (int t = l-2; t>-1; t--){
+        std::cout << " t = " << t <<  std:: endl;
+        seq_t.insert(seq_t.begin(), sequence[t]);
+
+        sum_probabilities = 0.0;
+        for (int i =0; i<4; i++ ){
+
+
+
+
+            if(std::find(C_t.begin(), C_t.end(), map_of_contacts[map_coordinate_to_int[C_t[0]]][i])==C_t.end() ){
+
+
+                C_t.insert(C_t.begin(),map_of_contacts[map_coordinate_to_int[C_t[0]]][i]  );
+
+                temp_e = count_contacts_breaked(seq_t, C_t, map_of_contacts,map_coordinate_to_int);
+                energies[i] = temp_e;
+                probabilities_to_move[i] = std::make_pair( exp(-(temp_e-current_energy)/T), i);
+
+                C_t.erase(C_t.begin());
+
+
+
+
+
+
+            }
+            else {
+                //точка не подходит
+
+
+                probabilities_to_move[i] = std::make_pair(0.0, i);
+                energies[i] = 0;
+
+
+            }
+
+
+
+
+
+            sum_probabilities=sum_probabilities+probabilities_to_move[i].first;
+
+
+
+
+
+        }
+
+
+
+
+
+        if(sum_probabilities==0.0){
+            std:: cout << " fail to rebuild" << std::endl;
+
+
+            std::ofstream out;
+            out.open("coordinates_one_step_fail.txt");
+
+            for (auto c : conformation) {
+
+                out << c.first << " " << c.second << "   ";
+
+
+                out << std::endl;
+
+
+            }
+            out.close();
+
+
+
+            return;
+
+        }
+
+        sort(probabilities_to_move.begin(), probabilities_to_move.end());
+        for (int i =0; i<4; i++ ){
+            probabilities_to_move[i].first= probabilities_to_move[i].first/sum_probabilities;
+
+
+        }
+        for (int i =1; i<4; i++ ){
+            probabilities_to_move[i].first= probabilities_to_move[i].first + probabilities_to_move[i-1].first;
+
+
+        }
+
+
+
+
+        q = distribution(generator);
+        //std::cout << " q = " << q << std:: endl;
+
+        for (int i =0; i<4; i++ ){
+
+            if (q<probabilities_to_move[i].first){
+                C_t.insert(C_t.begin(),map_of_contacts[map_coordinate_to_int[ C_t[0]  ]][probabilities_to_move[i].second]  );
+                current_energy = energies[probabilities_to_move[i].second];
+
+                // seq_t.insert(seq_t.begin()+t, sequence[t]);
+
+
+                std:: cout << " choosed " << map_of_contacts[map_coordinate_to_int[ C_t[0]  ]][probabilities_to_move[i].second] .first<< " " << map_of_contacts[map_coordinate_to_int[ C_t[0]  ]][probabilities_to_move[i].second] .second  << " " << std:: endl;
+
+
+
+
+
+                break;
+
+            }
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+    if( C_t.size()==sequence.size()  ){
+
+        E = current_energy;
+        conformation=C_t;
+
+        std::cout << " check energy " << current_energy << std::endl;
+        std::ofstream out;
+        out.open("coordinates_one_step_start.txt");
+
+        for (auto c : conformation) {
+
+            out << c.first << " " << c.second << "   ";
+
+
+            out << std::endl;
+
+
+        }
+        out.close();
+
+
+    }
+    else{
+        std::cout << " fail int the end " << std:: endl;
+        std:: cout << "new size " << C_t.size() << std:: endl;
+        return ;
+    }
+
+
+
+
+
+
+
+}
+
 
 void Protein::regrowth_middle(int l, int start_position){
 
@@ -459,6 +1058,7 @@ void Protein::regrowth_middle(int l, int start_position){
     std::vector<std::pair <int, int>>  C_t, C_t_temp ;
     std::vector<int> seq_t, seq_t_temp;
     //std::copy(sequence.begin(), seq_t.begin()+ start_position, C_t_temp.begin());
+    C_t.reserve(sequence.size());
     C_t_temp.resize(start_position);
     //C_t_temp.resize(sequence.size());
     std::copy(conformation.begin(), conformation.begin()+ start_position, C_t_temp.begin());
@@ -466,29 +1066,61 @@ void Protein::regrowth_middle(int l, int start_position){
     //C_t_temp.clear();
 
     C_t_temp.resize(sequence.size()-start_position-l);
-    std::copy(conformation.begin()+end_position+1, conformation.end()+ start_position, C_t_temp.begin());
+    std::copy(conformation.begin()+end_position+1, conformation.end(), C_t_temp.begin());
 
-    C_t.reserve(C_t.size()+C_t_temp.size());
+   // C_t.reserve(C_t.size()+C_t_temp.size());
     C_t.insert(C_t.end(), C_t_temp.begin(), C_t_temp.end());
     C_t_temp.clear();
     //это удаление куска конформации с start_position до end_position
 
 
+
+
+    std::ofstream out;
+    out.open("partied.txt");
+
+    for (auto c : C_t) {
+
+        out << c.first << " " << c.second << "   ";
+
+
+        out << std::endl;
+
+
+    }
+    out.close();
+
+
+
+
+
+
+
+
+    seq_t.reserve(sequence.size());
     seq_t_temp.resize(start_position);
     //seq_t_temp.resize(sequence.size());
     std::copy(sequence.begin(), sequence.begin()+ start_position, seq_t_temp.begin());
+    //сразу беру в последовательности на один остаток больше
     seq_t = seq_t_temp;
-    seq_t_temp.clear();
-    std::copy(sequence.begin()+end_position+1, sequence.end()+ start_position, seq_t_temp.begin());
-    seq_t.reserve(seq_t.size()+seq_t_temp.size() );
+// Ошибка здесь
+    seq_t_temp.resize(sequence.size()-start_position-l);
+    //seq_t_temp.clear();
+    std::copy(sequence.begin()+end_position+1, sequence.end(), seq_t_temp.begin());
+   // seq_t.reserve(seq_t.size()+seq_t_temp.size() );
     seq_t.insert(seq_t.end(), seq_t_temp.begin(), seq_t_temp.end());
     seq_t_temp.clear();
     //это удаление куска последовательности
-
+    std::cout << "seq size " << seq_t.size() << " ct size " << C_t.size() << std::endl;
     int current_energy = count_contacts_breaked(seq_t, C_t, map_of_contacts, map_coordinate_to_int);
+
+    seq_t.insert(seq_t.begin()+start_position, sequence[start_position]);
+
+    std::cout << "After seq size " << seq_t.size() << " ct size " << C_t.size() << std::endl;
+
     int temp_e;
     static std::vector <std::pair<float, int>> probabilities_to_move;
-    probabilities_to_move.resize(4, std::make_pair(0, 0));
+    probabilities_to_move.resize(4, std::make_pair(0.0, 0));
    // std::vector<std::pair <float , int>> first_moves ;
     std::vector<int> energies;
     energies.resize(4, 0);
@@ -497,7 +1129,7 @@ void Protein::regrowth_middle(int l, int start_position){
     //for ( std::pair <int, int> step : map_of_contacts[map_coordinate_to_int[C_t[start_position-1]]] ){
     for (int i =0; i<4; i++ ){
        // sum_probabilities=0.0;
-        std:: cout << " check map"<< map_of_contacts[map_coordinate_to_int[C_t[start_position-1]]][i].first << " " << map_of_contacts[map_coordinate_to_int[C_t[start_position-1]]][i].second<< std:: endl;
+       // std:: cout << " check map"<< map_of_contacts[map_coordinate_to_int[C_t[start_position-1]]][i].first << " " << map_of_contacts[map_coordinate_to_int[C_t[start_position-1]]][i].second<< std:: endl;
         if (map_of_contacts[map_coordinate_to_int[C_t[start_position-1]]][i] == conformation[start_position]){
             probabilities_to_move[i] = std::make_pair(0.0, i);
             energies[i] = 0;//strange, but it for time economy
@@ -507,9 +1139,9 @@ void Protein::regrowth_middle(int l, int start_position){
 
 
             // Лучше потом переделать функцию для энергии
-            C_t.insert(C_t.begin()+start_position+1,map_of_contacts[map_coordinate_to_int[C_t[start_position-1]]][i]  );
+            C_t.insert(C_t.begin()+start_position,map_of_contacts[map_coordinate_to_int[C_t[start_position-1]]][i]  );
 
-            temp_e = count_contacts_breaked(sequence, C_t, map_of_contacts,map_coordinate_to_int);
+            temp_e = count_contacts_breaked(seq_t, C_t, map_of_contacts,map_coordinate_to_int);
             energies[i] = temp_e;
             probabilities_to_move[i] = std::make_pair( exp(-(temp_e-current_energy)/T), i);
 
@@ -546,7 +1178,7 @@ void Protein::regrowth_middle(int l, int start_position){
 
 
 
-    std::cout << "first move " << std:: endl;
+  /**  std::cout << "first move " << std:: endl;
     for (int i=0; i<4; i++){
 
         std::cout << probabilities_to_move[i].first <<" "<< probabilities_to_move[i].second << " " << std::endl;
@@ -557,7 +1189,7 @@ void Protein::regrowth_middle(int l, int start_position){
 
     }
 
-
+**/
 
 
     for (int i =1; i<4; i++ ){
@@ -580,20 +1212,20 @@ void Protein::regrowth_middle(int l, int start_position){
 
 
 
-    std::default_random_engine generator;
+    std::default_random_engine generator(std::random_device{}() );
     std::uniform_real_distribution<double> distribution(0.0,1.0);
     double q = distribution(generator);
-    std::cout << " q = " << q << std:: endl;
+   // std::cout << " q = " << q << std:: endl;
     for (int i =0; i<4; i++ ){
 
         if (q<probabilities_to_move[i].first){
-            C_t.insert(C_t.begin()+start_position+1,map_of_contacts[map_coordinate_to_int[ C_t[start_position-1]  ]][probabilities_to_move[i].second]  );
+            C_t.insert(C_t.begin()+start_position,map_of_contacts[map_coordinate_to_int[ C_t[start_position-1]  ]][probabilities_to_move[i].second]  );
             current_energy = energies[probabilities_to_move[i].second];
 
-            seq_t.insert(seq_t.begin()+start_position+1, sequence[start_position]);
+            //seq_t.insert(seq_t.begin()+start_position, sequence[start_position]);
 
-            std:: cout << " choosed " << i << " " << std:: endl;
-            std:: cout << "check size " << C_t.size() << std:: endl;
+        //    std:: cout << " choosed " << i << " " << std:: endl;
+        //    std:: cout << "check size " << C_t.size() << std:: endl;
             break;
 
         }
@@ -601,19 +1233,39 @@ void Protein::regrowth_middle(int l, int start_position){
     }
 
 
+    out.open("partied_f.txt");
+
+    for (auto c : C_t) {
+
+        out << c.first << " " << c.second << "   ";
+
+
+        out << std::endl;
+
+
+    }
+    out.close();
+
+
+
+
 
    // sum_probabilities = 0.0;
 
 
     for (int t = start_position+1; t< end_position+1; t++){
+       // std::cout << " t = " << t << " size = " << C_t.size() << std::endl;
+        seq_t.insert(seq_t.begin()+t, sequence[t]);
+
         sum_probabilities = 0.0;
 
 
         for (int i =0; i<4; i++ ){
 
-            if(std::find(C_t.begin(), C_t.end(), map_of_contacts[map_coordinate_to_int[C_t[t-1]]][i])!=C_t.end() ||  distance( map_of_contacts[map_coordinate_to_int[C_t[t-1]]][i] ,conformation[end_position+1] )>abs(end_position+1-t)){
+           /** if(std::find(C_t.begin(), C_t.end(), map_of_contacts[map_coordinate_to_int[C_t[t-1]]][i])!=C_t.end() ||  distance( map_of_contacts[map_coordinate_to_int[C_t[t-1]]][i] ,conformation[end_position+1] )>abs(end_position+1-t)){
 
                 probabilities_to_move[i] = std::make_pair(0.0, i);
+                energies[i] = 0;
 
 
 
@@ -631,6 +1283,33 @@ void Protein::regrowth_middle(int l, int start_position){
 
 
 
+
+
+            }**/
+
+            if(std::find(C_t.begin(), C_t.end(), map_of_contacts[map_coordinate_to_int[C_t[t-1]]][i])==C_t.end() &&  distance( map_of_contacts[map_coordinate_to_int[C_t[t-1]]][i] ,conformation[end_position+1] )<=abs(end_position+1-t)){
+
+
+                C_t.insert(C_t.begin()+t,map_of_contacts[map_coordinate_to_int[C_t[t-1]]][i]  );
+
+                temp_e = count_contacts_breaked(seq_t, C_t, map_of_contacts,map_coordinate_to_int);
+                energies[i] = temp_e;
+                probabilities_to_move[i] = std::make_pair( exp(-(temp_e-current_energy)/T), i);
+
+                C_t.erase(C_t.begin()+t);
+
+
+
+
+
+
+            }
+            else {
+                //точка подходит
+
+
+                probabilities_to_move[i] = std::make_pair(0.0, i);
+                energies[i] = 0;
 
 
             }
@@ -658,7 +1337,7 @@ void Protein::regrowth_middle(int l, int start_position){
 
         }
         for (int i =1; i<4; i++ ){
-            probabilities_to_move[i].first= probabilities_to_move[i].first + probabilities_to_move[i-1].second;
+            probabilities_to_move[i].first= probabilities_to_move[i].first + probabilities_to_move[i-1].first;
 
 
         }
@@ -667,27 +1346,39 @@ void Protein::regrowth_middle(int l, int start_position){
 
 
         q = distribution(generator);
+        //std::cout << " q = " << q << std:: endl;
 
         for (int i =0; i<4; i++ ){
 
             if (q<probabilities_to_move[i].first){
-                C_t.insert(C_t.begin()+t+1,map_of_contacts[map_coordinate_to_int[ C_t[t-1]  ]][probabilities_to_move[i].second]  );
+                C_t.insert(C_t.begin()+t,map_of_contacts[map_coordinate_to_int[ C_t[t-1]  ]][probabilities_to_move[i].second]  );
                 current_energy = energies[probabilities_to_move[i].second];
 
-                seq_t.insert(seq_t.begin()+t+1, sequence[t]);
+               // seq_t.insert(seq_t.begin()+t, sequence[t]);
 
-
+                break;
 
             }
 
         }
 
 
+/**
+
+        out.open("partied_s.txt");
+
+        for (auto c : C_t) {
+
+            out << c.first << " " << c.second << "   ";
 
 
+            out << std::endl;
 
 
-
+        }
+        out.close();
+        break;
+**/
 
 
 
@@ -704,7 +1395,7 @@ void Protein::regrowth_middle(int l, int start_position){
 
         std::cout << " check energy " << current_energy << std::endl;
         std::ofstream out;
-        out.open("coordinates_one_step");
+        out.open("coordinates_one_step.txt");
 
         for (auto c : conformation) {
 
@@ -715,15 +1406,17 @@ void Protein::regrowth_middle(int l, int start_position){
 
 
         }
+        out.close();
 
 
     }
     else{
     std::cout << " fail int the end " << std:: endl;
+    std:: cout << "new size " << C_t.size() << std:: endl;
     return ;
     }
 
-    sum_probabilities = 0.0;
+    //sum_probabilities = 0.0;
 
 
 
@@ -787,7 +1480,7 @@ int count_contacts_breaked(std::vector <int> &sequence, std::vector <std::pair <
 //static std::valarray<std::pair <int, int>>  steps = { std::make_pair(1, 0), std::make_pair(-1, 0), std::make_pair(0, 1),  std::make_pair(0, -1) };
 //std:: vector <std::pair <int, int>> not_topological = {};
     std::pair<int, int> new_point, new_point_begin, new_point_end;
-    for (int i = 1; i < sequence.size() - 1; i++) {
+    for (int i = 1; i < sequence.size()-1; i++) {
 //not_topological.push_back(conformation [i-1]);
 // not_topological.push_back(conformation [i+1]);
         for (std::pair<int, int> step : map_of_contacts[map_coordinate_to_int[conformation[i]]]) {

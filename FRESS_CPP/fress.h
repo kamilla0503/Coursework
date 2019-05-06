@@ -42,6 +42,8 @@ public:
     void calculate_probabilities_for_l(int lmin = 2, int lmax = 12);
     int count_contacts();
     void regrowth_middle(int l, int start_position);
+    void regrowth_start(int l );
+    void regrowth_end(int l );
     int distance( std:: pair <int, int> point1, std:: pair <int, int>point2   );
 
 
