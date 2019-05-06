@@ -19,24 +19,24 @@
 class Protein{
 public:
     std::vector <int> sequence;
-    int number_of_iterations;
-    int E;
+   // int number_of_iterations;
+    int E; // энергия текущей конформации
     int min_E;
-    float T;
-    std::vector <double>  probabilities={};
-    //std::pair <int, std::tuple<int, int>> node;
-    //std::pair <int, int> coordinate;
+    float T; //температура
+    bool change_T; //чтобы корректно менять температуру каждый 50 000 шагов
+    long int iterator; //для подсчета числа шагов
+    std::vector <double>  probabilities={}; //вектор вероятностей для выбора длины, вероятность пропорциональна 1/l
     std::vector <std::pair <int, int>> conformation;
     std::vector<int> conformation_int;
-    std:: vector <std:: list <std:: pair <int, int>>> results;
+    std:: vector <std:: vector <std:: pair <int, int>>> results;
     std:: map <int, std::vector < std::pair <int, int> >> map_of_contacts;
     std:: map <int, std::pair<int, int>> map_int_to_coordinate;
-    std:: map <std::pair<int, int>, int> map_coordinate_to_int;
+    std:: map <std::pair<int, int>, int> map_coordinate_to_int; //словарь для хранения всех соседей
 
 
 
     Protein();
-    Protein(std::vector <int> sequence_input, int number_of_iterations=5000000 );
+    Protein(std::vector <int> sequence_input  );
 
     void find_minimum();
     void calculate_probabilities_for_l(int lmin = 2, int lmax = 12);
