@@ -919,7 +919,7 @@ void Protein::find_minimum() {
 
         //std:: cout << l << " " ;
 
-        if( iterator%50000==0 && change_T){
+        if( iterator%50000==0 && change_T && T>0.1){
             T=T*0.98;
             std:: cout << "50000 moves are made; new T : " << T << std:: endl;
             change_T = false;
@@ -927,8 +927,8 @@ void Protein::find_minimum() {
         if(iteration%10000==0){
             std::cout << "Number of attempts :  " << iteration<< std::endl;
         }
-        if(min_E==-14){
-            std::cout << "-9 achieved! " << std:: endl;
+        if(min_E==-9){
+            std::cout << "-36 achieved! " << std:: endl;
             break;
         }
 
@@ -938,6 +938,12 @@ void Protein::find_minimum() {
     std::cout << std::endl;
 
 };
+
+
+
+
+
+
 
 int count_contacts_breaked(std::vector <int> &sequence, std::vector <std::pair <int, int>> &conformation, std:: map <int, std::vector < std::pair <int, int> >> &map_of_contacts, std:: map <std::pair<int, int>, int> &map_coordinate_to_int    ) {
     int hh = 0;

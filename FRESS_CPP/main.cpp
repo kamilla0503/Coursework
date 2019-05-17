@@ -1,10 +1,9 @@
 #include <iostream>
+#include <fstream>
 #include "fress.h"
-
-
 using namespace std;
 
-int main() {
+int main(int argc, char *argv[]) {
     //std::cout << "Hello, World!" << std::endl;
     cout.precision(3);
     //valarray <int> sequence = { 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0};
@@ -14,10 +13,26 @@ int main() {
   // vector <int> sequence = {0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0};
 
   //  vector <int> sequence = { 0,1, 0,1,1,1,1,1,1, 0};
-//  vector<int> sequence = {1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1};
+ //vector<int> sequence = {1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1};
 
+  string filename, hp_sequence;
 
-vector <int> sequence = {0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0};
+    filename=argv[1];
+    std::ifstream in(filename);
+    vector <int> sequence;
+    getline(in, hp_sequence);
+    for (char c: hp_sequence){
+        if(c=='H'){
+            sequence.push_back(1);
+        }
+        if(c=='P'){
+            sequence.push_back(0);
+        }
+
+    }
+    cout << "length is " << sequence.size() << endl;
+
+//vector <int> sequence = {0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0};
     Protein p(sequence);
 
     /**for (int i =0; i<p.probabilities.size(); i++){

@@ -41,6 +41,8 @@ public:
     void find_minimum();
     void calculate_probabilities_for_l(int lmin = 2, int lmax = 12);
     int count_contacts();
+    int count_contacts_partied_t( std::vector <int> &sequence, std::vector <std::pair <int, int>> &conformation, std:: map <int, std::vector < std::pair <int, int> >> &map_of_contacts, std:: map <std::pair<int, int>, int> &map_coordinate_to_int, int t, int current_energy    );
+
     void regrowth_middle(int l, int start_position);
     void regrowth_start(int l );
     void regrowth_end(int l );
