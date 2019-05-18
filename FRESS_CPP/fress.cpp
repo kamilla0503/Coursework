@@ -677,9 +677,10 @@ void Protein::regrowth_middle(int l, int start_position){
             // Лучше потом переделать функцию для энергии
             C_t.insert(C_t.begin()+start_position,map_of_contacts[map_coordinate_to_int[C_t[start_position-1]]][i]  );
 
-            temp_e = count_contacts_breaked(seq_t, C_t, map_of_contacts,map_coordinate_to_int);
-            energies[i] = temp_e;
-            probabilities_to_move[i] = std::make_pair( exp(-(temp_e-current_energy)/T), i);
+            //temp_e = count_contacts_breaked(seq_t, C_t, map_of_contacts,map_coordinate_to_int);
+            energies[i] =  temp_e = count_contacts_partied_t(seq_t, C_t, map_of_contacts,map_coordinate_to_int, start_position, current_energy);
+
+             probabilities_to_move[i] = std::make_pair( exp(-(temp_e-current_energy)/T), i);
 
             C_t.erase(C_t.begin()+start_position);
         }
@@ -746,7 +747,8 @@ void Protein::regrowth_middle(int l, int start_position){
 
                 C_t.insert(C_t.begin()+t,map_of_contacts[map_coordinate_to_int[C_t[t-1]]][i]  );
 
-                temp_e = count_contacts_breaked(seq_t, C_t, map_of_contacts,map_coordinate_to_int);
+                temp_e = count_contacts_partied_t(seq_t, C_t, map_of_contacts,map_coordinate_to_int, t, current_energy);
+
                 energies[i] = temp_e;
                 probabilities_to_move[i] = std::make_pair( exp(-(temp_e-current_energy)/T), i);
 
@@ -940,7 +942,32 @@ void Protein::find_minimum() {
 };
 
 
+int Protein::count_contacts_partied_t( std::vector <int> &sequence, std::vector <std::pair <int, int>> &conformation, std:: map <int, std::vector < std::pair <int, int> >> &map_of_contacts, std:: map <std::pair<int, int>, int> &map_coordinate_to_int, int t, int current_energy    ){
 
+
+    int new_energy = current_energy;
+    int position;
+    for (std::pair<int, int> step : map_of_contacts[map_coordinate_to_int[conformation[t]]]){
+
+        if (step != conformation[t - 1] && step != conformation[t + 1] &&
+            std::find(conformation.begin(), conformation.end(), step) != conformation.end()) {
+
+            position = std::distance(conformation.begin(), find(conformation.begin(), conformation.end(), step));
+            new_energy = new_energy + sequence[t] * sequence[position];
+        }
+
+
+
+
+    }
+
+
+
+
+
+    return new_energy ;
+
+}
 
 
 
