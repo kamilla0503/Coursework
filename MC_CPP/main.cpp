@@ -14,11 +14,16 @@ int main() {
     std::vector<int> s_template = {1,1,1};
 
 
-    float h =0.1;
+    float h =0.05;
 
     float start_t = 0.05;
     float current_t = start_t;
     float finish_t = 2.26;
+
+    std::ofstream out2;          // поток для записи
+    out2.open("conformations.txt");
+
+
     while(current_t<finish_t){
         Protein p(s_template);
         float f1 = p.MC_for_E(current_t, 0.55, 400000);
@@ -29,10 +34,19 @@ int main() {
         std::cout << current_t<< std::endl;
 
         current_t = current_t+h;
+
+        for (int i = 0; i<p.conformation.size(); i++){
+            out2 << p.conformation[i] << " ";
+
+
+        }
+        out2 << std::endl;
     }
 
     out1.close();
     //std::cout << f1<< std:: endl;
 
     return 0;
+
+
 }

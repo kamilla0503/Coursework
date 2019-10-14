@@ -188,7 +188,7 @@ float Protein::MC_for_E(float temperature, float fugacity, int num_steps){
 
 
     std::default_random_engine generators1(std::random_device{}() );
-    std::uniform_int_distribution<int> distribution1(0, 4); //temp
+    std::uniform_int_distribution<int> distribution1(0, 3); //temp
     std::ofstream forl;          // поток для записи
     forl.open("leng_over_t_"+std::to_string(temperature)+".txt" );
     std::cout << "leng_over_t_"+std::to_string(temperature)+".txt" << std::endl;
@@ -216,8 +216,9 @@ float Protein::MC_for_E(float temperature, float fugacity, int num_steps){
 
         else {
             rand_path = distribution1(generators1);
-            new_point = lattice.get_contacts(conformation.back())[rand_path];
 
+            new_point = lattice.get_contacts(conformation.back())[rand_path];
+            //std:: cout << rand_path << " " << new_point << std::endl;
             if(std::find(conformation.begin(), conformation.end(), new_point)==conformation.end()){
                 new_conformation = conformation;
                 new_sequence = sequence;
